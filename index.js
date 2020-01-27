@@ -158,6 +158,15 @@ app.get('/view-all-res', async (req, res) => {
 	console.log('result', result);
 	return res.send(result.rows);
 });
+app.get('/view-all-users-res', async (req, res) => {
+	const VIEW = `Select * From PASSENGER_DETAILS`;
+	const options = { outFormat: oracledb.OUT_FORMAT_OBJECT };
+
+	const result = await connection.execute(VIEW, {}, options);
+
+	console.log('result', result);
+	return res.send(result.rows);
+});
 
 app.get('/view-app', async (req, res) => {
 	const VIEW_APP = `
