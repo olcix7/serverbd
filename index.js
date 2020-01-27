@@ -63,72 +63,38 @@ app.get('/get-pilot', async (req, res) => {
 	console.log('result', result);
 	return res.send(result.rows);
 });
+app.get('/get-planes', async (req, res) => {
+	const VIEW = `Select * From Plane`;
+	const options = { outFormat: oracledb.OUT_FORMAT_OBJECT };
+
+	const result = await connection.execute(VIEW, {}, options);
+
+	console.log('result', result);
+	return res.send(result.rows);
+});
 
 app.get('/add-app', async (req, res) => {
-	const { from, to, distance, flight_date, flight_time, sell_tickets, plane_id, pilot_id } = req.query;
+	const { idCityFrom, idCityTo, distance, flight_date, flight_time, idPlane, idPilot } = req.query;
 
 	const options = { autoCommit: true };
 
 	const INSERT_APP =
 		`BEGIN
-			 :ret := zgloszenie_add(:p1);
+			 AddFlight(:p1, :p2, :p3, TO_DATE(:p4, 'DD-MM-YYYY'), :p5, :p6, :p7);
 		 END;`;
 
 	const binds = {
-		p1:  pesel,
-		ret:  { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 40 }
+		p1:  idCityFrom,
+		p2:  idCityTo,
+		p3:  distance,
+		p4:  flight_date,
+		p5:  flight_time,
+		p6:  idPlane,
+		p7:  idPilot
 	};
 
 	let result = await connection.execute(INSERT_APP, binds, options);
-	const idZgloszenie = result.outBinds.ret;
-	console.log('idZgloszenie', idZgloszenie);
-
-	const bindsIns = {
-		p1: idZgloszenie,
-		p2: company,
-		p3: category,
-		p4: name,
-		p5: description,
-		p6: model
-	};
-
-	const bindsMiejsce = {
-		p1: idZgloszenie,
-		p2: province1,
-		p3: city1,
-		p4: street1,
-		p5: houseNumber1
-	};
-
-	const bindsOdb = {
-		p1: idZgloszenie,
-		p2: province2,
-		p3: city2,
-		p4: street2,
-		p5: houseNumber2
-	};
-
-	const INSTRUMENT_ADD =
-		`BEGIN
-			 instrument_add(:p1, :p2, :p3, :p4, :p5, :p6);
-		 END;`;
-
-	const MIEJSCE_ADD =
-		`BEGIN
-			 miejsce_add(:p1, :p2, :p3, :p4, :p5);
-		 END;`;
-
-	const ODBIOR_ADD =
-		`BEGIN
-			 odbior_add(:p1, :p2, :p3, :p4, :p5);
-		 END;`;
-
-	result = await connection.execute(INSTRUMENT_ADD, bindsIns, options);
-	console.log('result1', result);
-	result = await connection.execute(MIEJSCE_ADD, bindsMiejsce, options);
-	console.log('result2', result);
-	result = await connection.execute(ODBIOR_ADD, bindsOdb, options);
-	console.log('result3', result);
+	console.log('result', result);
 
 	return res.send(result);
 });

@@ -1,5 +1,5 @@
 module.exports = {
 	user: "SYSTEM",
-	password: "Qazxsw21",
-	connectString:"localhost/BDwAS"
+	password: "admin",
+	connectString:"localhost/ORCLDATABASE"
 };
