@@ -99,6 +99,32 @@ app.get('/add-app', async (req, res) => {
 	return res.send(result);
 });
 
+app.get('/add-reservation', async (req, res) => {
+	const {  } = req.query;
+
+	const options = { autoCommit: true };
+
+	const INSERT_APP =
+		`BEGIN
+			 
+		 END;`;
+
+	const binds = {
+		p1:  idCityFrom,
+		p2:  idCityTo,
+		p3:  distance,
+		p4:  flight_date,
+		p5:  flight_time,
+		p6:  idPlane,
+		p7:  idPilot
+	};
+
+	let result = await connection.execute(INSERT_APP, binds, options);
+	console.log('result', result);
+
+	return res.send(result);
+});
+
 app.get('/add-repair', async (req, res) => {
 	const { idApplication, worker, cost, time, description } = req.query;
 
@@ -123,11 +149,11 @@ app.get('/add-repair', async (req, res) => {
 	return res.send(result);
 });
 
-app.get('/view-workers', async (req, res) => {
-	const VIEW_WORKERS = `Select * From p_pracownik`;
+app.get('/view-all-res', async (req, res) => {
+	const VIEW = `Select * From Reservation Where USER_ID = 1`;
 	const options = { outFormat: oracledb.OUT_FORMAT_OBJECT };
 
-	const result = await connection.execute(VIEW_WORKERS, {}, options);
+	const result = await connection.execute(VIEW, {}, options);
 
 	console.log('result', result);
 	return res.send(result.rows);
