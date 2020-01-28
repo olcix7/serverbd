@@ -80,7 +80,7 @@ app.get('/add-app', async (req, res) => {
 
 	const INSERT_APP =
 		`BEGIN
-			 AddFlight(:p1, :p2, :p3, TO_DATE(:p4, 'DD-MM-YYYY'), :p5, :p6, :p7);
+			 :ret := AddFlight2(:p1, :p2, :p3, TO_DATE(:p4, 'DD-MM-YYYY'), :p5, :p6, :p7);
 		 END;`;
 
 	const binds = {
@@ -90,13 +90,14 @@ app.get('/add-app', async (req, res) => {
 		p4:  flight_date,
 		p5:  flight_time,
 		p6:  idPlane,
-		p7:  idPilot
+		p7:  idPilot,
+		ret:  { dir: oracledb.BIND_OUT, type: oracledb.NUMBER, maxSize: 40 }
 	};
 
 	let result = await connection.execute(INSERT_APP, binds, options);
 	console.log('result', result);
 
-	return res.send(result);
+	return res.send(result.outBinds);
 });
 
 app.get('/add-reservation', async (req, res) => {
@@ -215,20 +216,27 @@ app.get('/view-all-apps', async (req, res) => {
 });
 
 app.get('/delete-app', async (req, res) => {
-	const { idApplication } = req.query;
+	const { idFlight } = req.query;
 
 	const options = { autoCommit: true };
 
-	const DELETE_APP = `Delete From p_zgloszenie Where id_zgloszenie = :p1`;
+	const DELETE_APP = `Delete From Flight Where FLIGHT_ID = :p1`;
 
 	const binds = {
-		p1:  idApplication
+		p1:  idFlight
 	};
 
 	const result = await connection.execute(DELETE_APP, binds, options);
 	console.log('result', result);
 
-	const VIEW_APP = `Select * From p_zgloszenie`;
+	const VIEW_APP = `
+			Select flight_id, distance, flight_date, flight_time, sell_tickets, plane_id,
+			cityname citynameFrom, cityname citynameTo, firstname,
+			lastname
+			From Flight f, City c, Pilot p 
+			Where f.from_city_id = c.city_id
+			AND f.pilot_id = p.pilot_id
+	`;
 	const opt = { outFormat: oracledb.OUT_FORMAT_OBJECT };
 
 	const r = await connection.execute(VIEW_APP, {}, opt);
@@ -273,22 +281,22 @@ app.get('/end-repair', async (req, res) => {
 	return res.send(result.rows);
 });
 
-// kup bilet
-app.get('/pay-app', async (req, res) => {
-	const { idApp } = req.query;
+app.get('/pay-client', async (req, res) => {
+	const { firstname } = req.query;
 
 	const options = { autoCommit: true };
 
-	const PAY_APP = `
-		INSERT INTO Tickets(name, type, price, count, flight_id)
-		VALUES('normalny', 'p', 250.0, 150, :p1)
+	const SQL = `
+		Update passenger_details
+		Set paid = 1
+		Where firstname = :p1
 	`;
 
 	const binds = {
-		p1:  idApp
+		p1:  firstname
 	};
 
-	const result = await connection.execute(PAY_APP, binds, options);
+	const result = await connection.execute(SQL, binds, options);
 	console.log('result', result);
 
 	return res.send(result.rows);
