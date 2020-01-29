@@ -101,47 +101,23 @@ app.get('/add-app', async (req, res) => {
 });
 
 app.get('/add-reservation', async (req, res) => {
-	const {  } = req.query;
-
-	const options = { autoCommit: true };
-
-	const INSERT_APP =
-		`BEGIN
-			 
-		 END;`;
-
-	const binds = {
-		p1:  idCityFrom,
-		p2:  idCityTo,
-		p3:  distance,
-		p4:  flight_date,
-		p5:  flight_time,
-		p6:  idPlane,
-		p7:  idPilot
-	};
-
-	let result = await connection.execute(INSERT_APP, binds, options);
-	console.log('result', result);
-
-	return res.send(result);
-});
-
-app.get('/add-repair', async (req, res) => {
-	const { idApplication, worker, cost, time, description } = req.query;
+	const { idTicket, name, price } = req.query;
 
 	const options = { autoCommit: true };
 
 	const INSERT_REPAIR =
 		`BEGIN
-			 zgloszenie_naprawy_add(:p1, :p2, :p3, :p4, :p5);
+			 ADDRESERVATION1(:p1, :p2, :p3, :p4, :p5, :p6, :p7);
 		 END;`;
 
 	const binds = {
-		p1:  idApplication,
-		p2:  worker,
-		p3:  cost,
-		p4:  time,
-		p5:  description
+		p1:  price,
+		p2:  0,
+		p3:  name,
+		p4:  '33b',
+		p5:  idTicket,
+		p6:  null,
+		p7:  1
 	};
 
 	let result = await connection.execute(INSERT_REPAIR, binds, options);
